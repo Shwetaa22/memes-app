@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+{% if user.is_authenticated %}
+    <h2>Home</h2>
+    <div id="memes">
+        {% for i in meme_dict %}
+            <img src="{{i}}" width="100" height="100"/>
+        {% endfor %}
+    </div>
+    <div style="position: relative">
+        <p style="position: fixed; bottom: 0; width:100%; text-align: center" id="cookie_info">Hi {{ request.COOKIES.user_info }}</p>
+    </div>
+{% else %}
+    <p>You are logged out !!</p>
+{% endif %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script type="text/javascript">
+   $( document ).ready(function() {
+   var id = {{user.id}}
+   $("#memes").hide();
+   {% if user.is_authenticated %}
+    if (confirm("This website collect cookies.Do you want to go further!")) {
+        $.ajax({
+          url: "{% url 'user_data' %}",
+          method:"POST",
+          data:{'id':id,'flag':1,'csrfmiddlewaretoken': '{{ csrf_token }}' }
+        })
+        .done(function( data ) {
+             $("#memes").show();
+              console.log( "Sample of data:", data.slice( 0, 100 ) );
+        });
+    } else {
+        $.ajax({
+          url: "{% url 'user_data' %}",
+          method:"POST",
+          data:{'id':id,'flag':0,'csrfmiddlewaretoken': '{{ csrf_token }}' }
+        })
+        .done(function( data ) {
+              console.log( "Sample of data:", data.slice( 0, 100 ) );
+        });
+        window.location.href = "{% url 'logout' %}";
+      }
+      {% endif %}
+    });
+  setTimeout(function(){
+    $("#cookie_info").delay(5000).fadeOut();
+}, 5000);
+
+</script>
+{% endblock %}
